@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://street-dogs-bbq.vercel.app/sitemap.xml
