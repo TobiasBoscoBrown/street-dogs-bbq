@@ -153,7 +153,7 @@ async function placeOrder(){
   const lines=items().map(i=>"  "+i.qty+" x "+i.name+(i.mp?"  (market price)":"  "+money(i.price*i.qty))).join("\n");
   const summary=
     "NEW PICKUP ORDER\nOrder #: "+orderNo+"\n\nCustomer: "+name+"\nPhone: "+phone+
-    "\nPickup: "+(date||"")+" "+(time||"")+"\nNotes: "+(notes||"none")+
+    "\nPickup: "+pickupLabel+"\nNotes: "+(notes||"none")+
     "\n\nItems:\n"+lines+"\n\nSubtotal: "+money(subtotal())+(anyMP()?" (+ market-price items at pickup)":"")+
     "\nPickup at: "+PICKUP_ADDR+"\nPayment: Pay at pickup";
 
@@ -163,7 +163,7 @@ async function placeOrder(){
     subject:"New Online Order "+orderNo+" — "+name,
     from_name:"Street Dogs BBQ Online Order",
     "Order Number":orderNo, "Customer":name, "Phone":phone,
-    "Pickup Time":(date+" "+time).trim(), "Notes":notes||"none",
+    "Pickup Time":pickupLabel, "Notes":notes||"none",
     "Subtotal":money(subtotal()), "Items":lines.replace(/\n/g,"; "),
     message:summary
   };
@@ -176,7 +176,16 @@ async function placeOrder(){
       console.warn("[Street Dogs] Web3Forms key not set — order not emailed. Add your access key in order.js.");
     }
   }catch(e){ ok=false; }
-  confirmOrder(orderNo, name, (date+" "+time).trim());
+  const asap = (!time || time==="ASAP");
+  let whenText, pickupLabel;
+  if(asap){ whenText="ready in about 20 minutes or so"; pickupLabel="ASAP (about 20 min)"; }
+  else {
+    let dstr="";
+    if(date){ const dt=new Date(date+"T00:00:00"); dstr=dt.toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"}); }
+    whenText="ready for pickup "+(dstr?("on "+dstr+" "):"")+"at "+time;
+    pickupLabel=(dstr?dstr+" ":"")+"at "+time;
+  }
+  confirmOrder(orderNo, name, whenText);
   // clear
   for(const k in cart) delete cart[k]; saveCart(); checkoutOpen=false; renderCart();
   btn && (btn.disabled=false);
@@ -189,7 +198,7 @@ function confirmOrder(orderNo, name, pickup){
     +'<div class="relative max-w-md mx-auto mt-[12vh] bg-cream rounded-3xl border border-line shadow-2xl p-7 text-center">'
     +'<div class="mx-auto w-14 h-14 grid place-items-center rounded-full bg-red text-cream mb-4"><svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></div>'
     +'<h3 class="font-display font-700 text-2xl text-ink">Order received!</h3>'
-    +'<p class="text-ink/70 mt-2 text-[15px]">Thanks '+name+'. We&rsquo;ll have it ready for pickup'+(pickup?(" around <b>"+pickup+"</b>"):"")+' at '+PICKUP_ADDR+'.</p>'
+    +'<p class="text-ink/70 mt-2 text-[15px]">Thanks '+name+'. We&rsquo;ll have it <b>'+pickup+'</b> at '+PICKUP_ADDR+'.</p>'
     +'<div class="mt-4 rounded-2xl bg-white border border-line py-4"><div class="text-[12px] uppercase tracking-wide text-muted">Your order number</div><div class="font-display font-700 text-2xl text-red mt-1">'+orderNo+'</div></div>'
     +'<p class="text-[13px] text-muted mt-3">Pay when you pick up. Questions? Call (208) 807-9826.</p>'
     +'<button id="closeConf" class="mt-5 w-full rounded-full bg-red text-cream font-700 py-3 hover:bg-reddark transition-colors">Start a new order</button>'
