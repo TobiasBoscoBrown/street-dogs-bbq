@@ -45,7 +45,7 @@ function extra(){ let e=0; (draft.item.options||[]).forEach(g=>{ const sel=draft
   names.forEach(nm=>{ const ch=g.choices.find(c=>c.n===nm); if(ch&&ch.p) e+=ch.p; }); }); return e; }
 function ready(){ if(!draft) return false; return (draft.item.options||[]).every(g=>!(g.required&&g.type==="single")||draft.opts[g.label]); }
 function hint(g){ if(g.type==="single") return g.required?"Required · Select 1":"Select 1"; if(g.max) return "Optional · Select up to "+g.max; return "Optional"; }
-function renderSheet(){ const s=document.getElementById("sheet"); const it=draft.item; let groups="";
+function renderSheet(){ const s=document.getElementById("sheet"); const _pp=s.querySelector(".sheet-scroll"); const _top=_pp?_pp.scrollTop:0; const it=draft.item; let groups="";
   (it.options||[]).forEach(g=>{
     groups+='<div class="mt-4"><div class="flex items-baseline gap-2"><div class="font-700 text-[14px] text-ink">'+esc(g.label)+(g.required?' <span class="text-red">*</span>':'')+'</div><div class="text-[11px] text-muted">'+hint(g)+'</div></div>';
     if(g.type==="single"){ groups+='<div class="flex flex-wrap gap-2 mt-2">';
@@ -62,7 +62,7 @@ function renderSheet(){ const s=document.getElementById("sheet"); const it=draft
   });
   const base=isMP(it.price)?0:priceNum(it.price); const unit=base+extra(); const lt=isMP(it.price)?"":(" · "+money(unit*draft.qty));
   s.innerHTML='<div class="absolute inset-0 bg-ink/60" data-close></div>'
-    +'<div class="relative w-full sm:max-w-md sm:mx-auto mt-auto sm:mt-[8vh] bg-cream rounded-t-3xl sm:rounded-3xl border border-line shadow-2xl p-5 max-h-[90vh] overflow-y-auto">'
+    +'<div class="sheet-scroll relative w-full sm:max-w-md sm:mx-auto mt-auto sm:mt-[8vh] bg-cream rounded-t-3xl sm:rounded-3xl border border-line shadow-2xl p-5 max-h-[90vh] overflow-y-auto">'
     +'<div class="flex items-start justify-between gap-3"><div><h3 class="font-display font-700 text-xl text-ink">'+esc(it.name)+'</h3>'
     +(isMP(it.price)?'<div class="text-[13px] text-muted">Market price</div>':'<div class="font-display font-700 text-red">'+it.price+'</div>')+'</div>'
     +'<button data-close class="w-8 h-8 grid place-items-center rounded-full border border-line text-ink/60 hover:text-ink text-xl leading-none">&times;</button></div>'
@@ -72,6 +72,7 @@ function renderSheet(){ const s=document.getElementById("sheet"); const it=draft
     +'<div class="text-right text-[11px] text-muted mt-1"><span id="nc">'+draft.note.length+'</span>/'+NOTE_MAX+'</div></div>'
     +'<div class="mt-2 flex items-center justify-between gap-3"><div class="flex items-center gap-2"><button id="qd" class="w-9 h-9 grid place-items-center rounded-full border border-line text-lg">&minus;</button><span class="w-8 text-center font-700 text-lg">'+draft.qty+'</span><button id="qi" class="w-9 h-9 grid place-items-center rounded-full border border-line text-lg">+</button></div>'
     +'<button id="sadd" class="flex-1 rounded-full bg-red text-cream font-700 py-3 hover:bg-reddark transition-colors disabled:opacity-40 disabled:cursor-not-allowed">Add '+draft.qty+' to order'+lt+'</button></div></div>';
+  const _np=s.querySelector(".sheet-scroll"); if(_np) _np.scrollTop=_top;
   s.querySelectorAll("[data-close]").forEach(b=>b.onclick=closeSheet);
   s.querySelectorAll("[data-sg]").forEach(b=>b.onclick=()=>{ const g=b.getAttribute("data-sg"),v=b.getAttribute("data-v"); draft.opts[g]=(draft.opts[g]===v?"":v); renderSheet(); });
   s.querySelectorAll("[data-mg]").forEach(b=>b.onclick=()=>{ if(b.disabled)return; const g=b.getAttribute("data-mg"),v=b.getAttribute("data-v"); const arr=draft.opts[g]; const i=arr.indexOf(v); if(i>=0)arr.splice(i,1); else arr.push(v); renderSheet(); });
