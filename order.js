@@ -124,7 +124,7 @@ function renderCart(){
 function fillTimes(){
   const d=document.getElementById("f-date"); const t=document.getElementById("f-time");
   if(!d||!t) return;
-  const today=new Date(); const iso=today.toISOString().slice(0,10);
+  const today=new Date(); const iso=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
   if(!d.value){ d.min=iso; d.value=iso; }
   const opts=['<option value="ASAP">ASAP (about 20 min)</option>'];
   for(let h=11; h<=19; h++){ for(const m of ["00","30"]){ if(h===19 && m==="30") continue; const hr=((h+11)%12)+1; const ap=h<12?"AM":"PM"; opts.push('<option>'+hr+":"+m+" "+ap+'</option>'); } }
